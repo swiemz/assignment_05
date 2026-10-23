@@ -61,7 +61,7 @@ if uploads:
     missing_dept = history["department"].isna()
     if missing_dept.any():
         raw_missing_ids = history.loc[missing_dept, "employeeid"].unique()
-        st.warning(f"Warning: These employee IDs have no department: {', '.join(raw_missing_ids)}")
+        st.warning(f"Warning: IDs have no department: {', '.join(raw_missing_ids)}")
 
     filtered_history = history.dropna(subset=["department"])
 
@@ -73,13 +73,18 @@ if uploads:
     selected_dates = st.date_input("Dates", [min_date, max_date])
 
     if selected_dept != "All":
-        filtered_history = filtered_history[filtered_history["department"] == selected_dept]
+        filtered_history = filtered_history[
+            filtered_history["department"] == selected_dept
+        ]
     filtered_history = filtered_history[
         (filtered_history["pay_date"].dt.date >= selected_dates[0]) &
         (filtered_history["pay_date"].dt.date <= selected_dates[1])
     ]
 
-    st.subheader(f"Payroll report for {selected_dept}, {selected_dates[0]} to {selected_dates[1]}")
+    st.subheader(
+        f"Payroll Report for {selected_dept}, "
+        f"{selected_dates[0]} to {selected_dates[1]}"
+    )
 
     col1, col2, col3, col4 = st.columns(4)
     col1.metric("Weeks", filtered_history["week_ending"].nunique())
@@ -96,4 +101,4 @@ if uploads:
     st.dataframe(missed_weeks(grid))
 
     csv = pay_by_month(filtered_history).to_csv(index=False)
-    st.download_button("Download pay by month CSV", data=csv, file_name="pay_by_month.csv")
+    st.download_button("Download CSV", data=csv, file_name="pay_by_month.csv")
