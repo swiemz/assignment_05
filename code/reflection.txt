@@ -1,7 +1,13 @@
-Write your reflection here.
 
-See reflection.md for what makes a good reflection — be specific, use the
-terminology from this assignment (grain, long vs. wide, vectorized .str methods,
-coerce, NaT, pd.to_datetime format, .dt, concat, ignore_index, group by, named
-aggregation, reset_index, pivot_table, fill_value, melt, lineage), and make it
-actionable.
+This lab was definitely the most digestable one for me so far. I understand how different functions can
+manipulate the data tables, and I am also able to understand the raw data a lot better before. From studying for the
+test, I understand the differences in using concat, melt, pivot_table, group by, and the differences in how they change
+the data in my table. I also know the syntax and when to use ignore_index or an aggregation fucntion to summarize my data 
+correctly. The hardest part for me was writing the code for the payroll_report_app.py. I found it difficult 
+to go back into the data and see how each of the functions from history.py, summarize.py, and reshape.py were outputting 
+the data. For example, I was having trouble passing the final test that wanted a warning button to show the employee ids not
+attached to a department, but in a different format than what i had been asked to code for cleaned_employees_id. I had to 
+change what I was calling from the cleaned_employees_id function to a raw_employee_id. I am definitely getting better at writing
+the code without as much help from the chatbot, and I am good at troubleshooting specific tests when they don't pass. In the future,
+I want to work on my skills for writing the streamlit apps, which will come from studying the syntax and structure of streamlit code
+itself.

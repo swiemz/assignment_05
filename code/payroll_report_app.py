@@ -44,3 +44,56 @@ Test it: pytest tests/test_pipeline.py -k app
 #
 # What the page does NOT do: cleaning, grouping, pivoting. If you find yourself
 # writing a groupby or a pivot_table here, that logic belongs in the package.
+
+import streamlit as st
+from payroll import (load_employees, load_export, build_history,
+                     pay_by_month, summarize_employees, hours_grid, missed_weeks)
+
+st.title("Salt City Coffee — Quarterly Payroll Report")
+roster = load_employees()
+uploads = st.file_uploader(
+    "Upload payroll exports (one or more)",
+    accept_multiple_files=True,
+    key="exports"
+)
+if uploads:
+    history = build_history([load_export(u) for u in uploads], roster)
+    missing_dept = history["department"].isna()
+    if missing_dept.any():
+        raw_missing_ids = history.loc[missing_dept, "employeeid"].unique()
+        st.warning(f"Warning: These employee IDs have no department: {', '.join(raw_missing_ids)}")
+
+    filtered_history = history.dropna(subset=["department"])
+
+    depts = ["All"] + sorted(filtered_history["department"].unique())
+    selected_dept = st.selectbox("Department", depts)
+
+    min_date = filtered_history["pay_date"].dt.date.min()
+    max_date = filtered_history["pay_date"].dt.date.max()
+    selected_dates = st.date_input("Dates", [min_date, max_date])
+
+    if selected_dept != "All":
+        filtered_history = filtered_history[filtered_history["department"] == selected_dept]
+    filtered_history = filtered_history[
+        (filtered_history["pay_date"].dt.date >= selected_dates[0]) &
+        (filtered_history["pay_date"].dt.date <= selected_dates[1])
+    ]
+
+    st.subheader(f"Payroll report for {selected_dept}, {selected_dates[0]} to {selected_dates[1]}")
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Weeks", filtered_history["week_ending"].nunique())
+    col2.metric("Employees", filtered_history["employee_id"].nunique())
+    col3.metric("Total hours", f"{filtered_history['hours_worked'].sum():,.2f}")
+    col4.metric("Total gross pay", f"${filtered_history['gross_pay'].sum():,.2f}")
+
+    st.bar_chart(pay_by_month(filtered_history).set_index("month"))
+
+    st.dataframe(summarize_employees(filtered_history))
+
+    grid = hours_grid(filtered_history)
+    st.dataframe(grid)
+    st.dataframe(missed_weeks(grid))
+
+    csv = pay_by_month(filtered_history).to_csv(index=False)
+    st.download_button("Download pay by month CSV", data=csv, file_name="pay_by_month.csv")
